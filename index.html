@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CompraSinSorpresas — Calculadora de costos de compraventa en Uruguay</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🏠</span>
+        <span class="logo-text">CompraSin<strong>Sorpresas</strong></span>
+      </div>
+      <p class="tagline">Calculá todos los costos reales de comprar una vivienda en Uruguay</p>
+    </div>
+    <div class="header-decoration"></div>
+
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-FMSLJGD41C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      gtag('js', new Date());
+      gtag('config', 'G-FMSLJGD41C');
+    </script>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <div class="container">
+
+      <!-- Form -->
+      <section class="card form-card">
+        <h2 class="section-title">Ingresá los datos de tu compra</h2>
+
+        <!-- Precio propiedad -->
+        <div class="field-group">
+          <label for="precio" class="label">Precio de la propiedad</label>
+          <div class="input-wrapper">
+            <span class="input-prefix">USD</span>
+            <input type="number" id="precio" class="input" placeholder="0" min="0" />
+          </div>
+        </div>
+
+        <!-- Banco -->
+        <div class="field-group">
+          <label class="label">¿Financiás con banco?</label>
+          <div class="toggle-group" id="toggle-banco">
+            <button class="toggle-btn active" data-value="no">No</button>
+            <button class="toggle-btn" data-value="si">Sí</button>
+          </div>
+        </div>
+
+        <!-- Sub-opciones banco -->
+        <div class="sub-fields" id="banco-fields" style="display:none;">
+          <div class="field-group">
+            <label for="banco-nombre" class="label">Banco</label>
+            <select id="banco-nombre" class="select">
+              <option value="">Seleccioná un banco</option>
+              <option value="bhu">BHU</option>
+              <option value="brou">BROU</option>
+              <option value="santander">Santander</option>
+              <option value="itau">Itaú</option>
+              <option value="bbva">BBVA</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <!-- Modo definición del préstamo -->
+          <div class="field-group">
+            <label class="label">¿Cómo querés definir el monto del préstamo?</label>
+
+            <label class="radio-option">
+              <input type="radio" name="modo-prestamo" value="auto" checked />
+              <span class="radio-label">
+                Estimarlo automáticamente
+                <span class="radio-sublabel">Ideal si todavía no simulaste en un banco.</span>
+              </span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="modo-prestamo" value="manual" />
+              <span class="radio-label">
+                Ingresarlo manualmente
+                <span class="radio-sublabel">Si ya usaste el simulador de tu banco, podés ingresar ese monto.</span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Caso AUTO: préstamo estimado -->
+          <div id="prestamo-auto-bloque" class="prestamo-estimado-bloque">
+            <p class="prestamo-estimado-valor" id="prestamo-auto-valor">Ingresá el precio de la propiedad para estimar el préstamo.</p>
+            <p class="prestamo-estimado-nota">Estimación basada en una financiación aproximada del 80% del valor de la propiedad.</p>
+          </div>
+
+          <!-- Caso MANUAL: input editable -->
+          <div id="prestamo-manual-bloque" class="field-group" style="display:none;">
+            <label for="prestamo" class="label">Monto del préstamo</label>
+            <div class="input-wrapper">
+              <span class="input-prefix">USD</span>
+              <input type="number" id="prestamo" class="input" placeholder="0" min="0" />
+            </div>
+            <p class="input-hint">Podés usar el simulador de tu banco y luego ingresar aquí el monto estimado.</p>
+          </div>
+        </div>
+
+        <!-- Inmobiliaria -->
+        <div class="field-group">
+          <label class="label">¿Comprás con inmobiliaria?</label>
+          <div class="toggle-group" id="toggle-inmobiliaria">
+            <button class="toggle-btn active" data-value="no">No</button>
+            <button class="toggle-btn" data-value="si">Sí</button>
+          </div>
+        </div>
+
+        <!-- Tipo de vivienda -->
+        <div class="field-group">
+          <label class="label">Tipo de vivienda</label>
+          <div class="radio-group" id="tipo-vivienda">
+            <label class="radio-option">
+              <input type="radio" name="tipo" value="unica" checked />
+              <span class="radio-label">Vivienda única</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="tipo" value="segunda" />
+              <span class="radio-label">Segunda vivienda</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="tipo" value="inversion" />
+              <span class="radio-label">Inversión</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-calcular" id="btn-calcular">Calcular costos</button>
+      </section>
+
+      <!-- Resultados -->
+      <section class="card results-card" id="results" style="display:none;">
+        <h2 class="section-title results-title">Resumen de costos estimados</h2>
+
+        <div class="results-list" id="results-list"></div>
+
+        <div class="nota-banco" id="nota-banco" style="display:none;"></div>
+
+        <!-- Bloque: resumen financiero -->
+        <div class="summary-grid" id="summary-grid">
+
+          <div class="summary-row">
+            <span class="summary-label">Precio de la vivienda</span>
+            <span class="summary-value" id="sum-precio">–</span>
+          </div>
+          <div class="summary-row" id="sum-row-prestamo" style="display:none;">
+            <span class="summary-label">Préstamo banco</span>
+            <span class="summary-value" id="sum-prestamo">–</span>
+          </div>
+          <div class="summary-row summary-row--highlight">
+            <span class="summary-label">Dinero propio necesario</span>
+            <span class="summary-value" id="sum-propio">–</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-label">Gastos de compra estimados</span>
+            <span class="summary-value" id="total-amount">–</span>
+          </div>
+          <div class="summary-row summary-row--total">
+            <span class="summary-label">Dinero total necesario antes de comprar</span>
+            <span class="summary-value" id="sum-total-necesario">–</span>
+          </div>
+
+        </div>
+
+        <div class="total-box total-box--final">
+          <div class="total-label">Costo total de la operación (precio + gastos)</div>
+          <div class="total-amount total-amount--final" id="total-final">USD 0</div>
+        </div>
+
+        <p class="extra-pct-line" id="extra-pct"></p>
+
+        <div class="nota-itp">
+          <span class="nota-icon">ℹ️</span>
+          <p><strong>Nota sobre el ITP:</strong> El impuesto se liquida sobre el <em>mayor</em> valor entre el precio de compraventa escriturado y el <em>valor catastral</em> del inmueble fijado por la DGC. Si el valor catastral supera al precio pactado, la base imponible será el catastral y el ITP resultará mayor al estimado aquí. Verificá el valor catastral con tu escribano antes de cerrar la operación.</p>
+        </div>
+
+        <!-- Funcionalidad 1 & 2: ahorro necesario + mensaje educativo -->
+        <div class="ahorro-bloque" id="ahorro-bloque" style="display:none;">
+          <p class="ahorro-pct-line" id="ahorro-pct-line"></p>
+          <p class="ahorro-edu">&#128204; En Uruguay normalmente se necesita entre 25% y 35% del valor de la vivienda para comprar.</p>
+        </div>
+
+        <!-- Funcionalidad 3: comparador alquiler -->
+        <div class="comparador-bloque" id="comparador-bloque" style="display:none;">
+          <h3 class="comparador-titulo">&#191;Est&#225;s comparando con alquilar?</h3>
+          <div class="comparador-input-row">
+            <label for="alquiler-mensual" class="label">Alquiler mensual estimado</label>
+            <div class="input-wrapper input-wrapper--inline">
+              <span class="input-prefix">USD</span>
+              <input type="number" id="alquiler-mensual" class="input" placeholder="0" min="0" />
+              <button class="btn-calcular-alquiler" id="btn-alquiler">Calcular</button>
+            </div>
+          </div>
+          <p class="comparador-resultado" id="comparador-resultado" style="display:none;"></p>
+          <div class="leads-bloque">
+            <p class="leads-texto">Pr&#243;ximamente podr&#225;s comparar el costo total de alquilar vs comprar esta propiedad.</p>
+            <button class="btn-leads" id="btn-comparador-completo">Ver comparador completo</button>
+            <p class="leads-aviso" id="leads-aviso" style="display:none;">&#161;Gracias! Te avisaremos cuando el comparador completo est&#233; disponible. &#127881;</p>
+          </div>
+        </div>
+
+        <button class="btn-reset" id="btn-reset">&#8592; Recalcular</button>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Aviso legal -->
+  <footer class="footer">
+    <div class="aviso-legal">
+      <span class="aviso-icon">⚖️</span>
+      <p>
+        <strong>Aviso legal:</strong> Los valores calculados son <em>estimaciones orientativas</em> basadas en porcentajes y aranceles típicos vigentes en Uruguay. No constituyen asesoramiento jurídico, notarial ni financiero. Los honorarios de escribanos, gastos registrales y comisiones pueden variar según el profesional, el banco y las características específicas de cada operación. Consultá siempre a un escribano y a tu banco antes de cerrar cualquier operación inmobiliaria.
+      </p>
+    </div>
+    <p class="footer-copy">CompraSinSorpresas — Uruguay · 2025</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
