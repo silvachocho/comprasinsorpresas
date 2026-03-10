@@ -197,7 +197,7 @@ function validar({ P, L, bancoClave, usaBanco }) {
 // RENDER
 // ════════════════════════════════════════════════════════
 
-function renderResults(r, { P, L, tipo, modoPrestamo }) {
+function renderResults(r, { P, L, modoPrestamo }) {
   // ── Desglose ──────────────────────────────────────────
   const list = document.getElementById("results-list");
   list.innerHTML = "";
@@ -205,7 +205,7 @@ function renderResults(r, { P, L, tipo, modoPrestamo }) {
   const items = [
     {
       label: "ITP — Impuesto a las Transmisiones Patrimoniales",
-      note:  "P × 1,5% · Base: precio declarado o valor catastral (el que sea mayor) — ver nota abajo",
+      note:  "P × 1,5% · Estimación orientativa. El ITP se calcula legalmente sobre el valor real/catastral del inmueble. Como ese valor no suele ser público, aquí se muestra solo una estimación.",
       value: fmt(r.itp),
     },
     {
@@ -249,14 +249,6 @@ function renderResults(r, { P, L, tipo, modoPrestamo }) {
       na:    true,
     });
   }
-
-  const tipoMap = { unica: "Vivienda única", segunda: "Segunda vivienda", inversion: "Inversión" };
-  items.push({
-    label:  "Tipo de vivienda",
-    note:   "Informativo — puede incidir en exoneraciones o alícuotas; consultá tu escribano",
-    value:  tipoMap[tipo],
-    isText: true,
-  });
 
   items.forEach(item => {
     const el = document.createElement("div");
@@ -367,7 +359,6 @@ function calcularAlquiler() {
 function calcular() {
   const P          = parseFloat(document.getElementById("precio").value) || 0;
   const bancoClave = document.getElementById("banco-nombre").value;
-  const tipo       = document.querySelector('input[name="tipo"]:checked').value;
 
   // Resolver L según modo (aplica igual para todos los bancos, incluido BHU).
   // BHU tiene gastos fijos, pero L sí impacta en dinero propio y ahorro necesario.
@@ -395,7 +386,7 @@ function calcular() {
     usaInmobiliaria: state.usaInmobiliaria,
   });
 
-  renderResults(breakdown, { P, L, tipo, modoPrestamo: state.modoPrestamo });
+  renderResults(breakdown, { P, L, modoPrestamo: state.modoPrestamo });
 }
 
 // ════════════════════════════════════════════════════════
