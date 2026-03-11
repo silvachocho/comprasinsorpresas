@@ -42,6 +42,10 @@ const state = {
   modoPrestamo:    "auto", // "auto" | "manual"
 };
 
+// Contexto del último cálculo — usado para recalcular ITP con valor catastral
+let _lastBreakdown = null;
+let _lastContext   = null; // { P, L, modoPrestamo }
+
 // ════════════════════════════════════════════════════════
 // HELPERS
 // ════════════════════════════════════════════════════════
@@ -205,7 +209,7 @@ function renderResults(r, { P, L, modoPrestamo }) {
   const items = [
     {
       label: "ITP — Impuesto a las Transmisiones Patrimoniales",
-      note:  "P × 1,5% · Estimación orientativa. El ITP se calcula legalmente sobre el valor real/catastral del inmueble. Como ese valor no suele ser público, aquí se muestra solo una estimación.",
+      note:  "P × 1,5% · Estimación orientativa.",
       value: fmt(r.itp),
     },
     {
@@ -250,15 +254,16 @@ function renderResults(r, { P, L, modoPrestamo }) {
     });
   }
 
-  items.forEach(item => {
+  items.forEach((item, idx) => {
     const el = document.createElement("div");
     el.className = "result-item";
+    if (idx === 0) el.id = "itp-result-item"; // ITP — para inyectar input catastral
     el.innerHTML = `
       <div class="result-label">
         ${item.label}
         <span class="result-note">${item.note}</span>
       </div>
-      <div class="result-value${item.na ? " na" : ""}">
+      <div class="result-value${item.na ? " na" : ""}" ${idx === 0 ? 'id="itp-valor"' : ""}>
         ${item.na ? "No aplica" : item.value}
       </div>
     `;
@@ -322,6 +327,48 @@ function renderResults(r, { P, L, modoPrestamo }) {
     if (btnLeads) btnLeads.style.display = "";
   }
 
+  // ── Input valor catastral — inyectar dentro del result-label del ITP ───────
+const itpItem = document.getElementById("itp-result-item");
+if (itpItem) {
+  const itpLabel = itpItem.querySelector(".result-label");
+  if (itpLabel) {
+    itpLabel.insertAdjacentHTML("beforeend", `
+      <div id="catastral-bloque" style="margin-top:14px; padding-top:10px; border-top:1px dashed #e5e7eb;">
+        
+        <p class="result-note">
+          El ITP se calcula sobre el valor catastral del inmueble. Como ese valor no siempre es público, aquí se muestra una estimación.
+        </p>
+
+        <p class="result-note" style="font-size:0.75rem; margin-top:8px; margin-bottom:4px;">
+          Valor catastral (opcional)
+        </p>
+
+        <div class="input-wrapper" style="max-width:220px;">
+          <span class="input-prefix">USD</span>
+          <input type="number" id="catastral-input" class="input" min="0" />
+        </div>
+
+        <p class="result-note" style="margin-top:6px;">
+          Si conocés el valor catastral podés ingresarlo para recalcular el ITP.
+        </p>
+
+        <p class="result-note" style="margin-top:4px; color:#9ca3af; font-size:0.74rem;">
+          Podés obtenerlo con el número de padrón del inmueble en Catastro o consultando a la inmobiliaria o escribano.
+        </p>
+
+      </div>
+    `);
+
+    document
+      .getElementById("catastral-input")
+      .addEventListener("input", recalcularConCatastral);
+  }
+}
+
+  // ── Guardar contexto para recálculo por catastral ─────
+  _lastBreakdown = r;
+  _lastContext   = { P, L, modoPrestamo };
+
   // ── Mostrar panel ─────────────────────────────────────
   document.querySelector(".form-card").style.display = "none";
   const resultsPanel = document.getElementById("results");
@@ -350,6 +397,45 @@ function calcularAlquiler() {
   resultadoEl.innerHTML =
     `Si alquilás esta propiedad durante <strong>10 años</strong> pagando <strong>${fmt(alquiler)}</strong> por mes, habrás pagado aproximadamente <strong>${fmt(totalAlquiler10)}</strong> en alquiler.`;
   resultadoEl.style.display = "block";
+}
+
+// ════════════════════════════════════════════════════════
+// RECÁLCULO ITP CON VALOR CATASTRAL
+// ════════════════════════════════════════════════════════
+
+function recalcularConCatastral() {
+  if (!_lastBreakdown || !_lastContext) return;
+
+  const catastral = parseFloat(document.getElementById("catastral-input")?.value) || 0;
+  const r         = _lastBreakdown;
+  const { P }     = _lastContext;
+
+  // ITP: usar catastral si fue ingresado, si no el original del breakdown
+  const itpNuevo = catastral > 0 ? catastral * 0.02 : r.itp;
+
+  // Recalcular totales derivados
+  const extraTotal           = itpNuevo + r.comision + r.escribano + r.aportesNotariales + r.registros + r.banco;
+  const costoTotal           = P + extraTotal;
+  const extraPct             = (extraTotal / P) * 100;
+  const dineroTotalNecesario = r.dineroPropio + extraTotal;
+  const ahorroNecesarioPct   = (dineroTotalNecesario / P) * 100;
+
+  // Actualizar valor del ITP en el desglose
+  const itpValorEl = document.getElementById("itp-valor");
+  if (itpValorEl) itpValorEl.textContent = fmt(itpNuevo);
+
+  // Actualizar todos los totales
+  document.getElementById("total-amount").textContent        = fmt(extraTotal);
+  document.getElementById("sum-total-necesario").textContent = fmt(dineroTotalNecesario);
+  document.getElementById("total-final").textContent         = fmt(costoTotal);
+
+  const pctEl = document.getElementById("extra-pct");
+  if (pctEl) pctEl.textContent =
+    `Los gastos adicionales representan el ${fmtPct(extraPct)} del precio de compra.`;
+
+  const ahorroLine = document.getElementById("ahorro-pct-line");
+  if (ahorroLine) ahorroLine.textContent =
+    `Para comprar esta propiedad necesitás tener ahorrado aproximadamente ${fmtPct(ahorroNecesarioPct)} del valor de la vivienda.`;
 }
 
 // ════════════════════════════════════════════════════════
@@ -430,8 +516,10 @@ document.getElementById("btn-calcular").addEventListener("click", calcular);
 document.getElementById("btn-reset").addEventListener("click", () => {
   document.getElementById("results").style.display = "none";
   document.querySelector(".form-card").style.display = "block";
-  const alquilerInput = document.getElementById("alquiler-mensual");
+  const alquilerInput  = document.getElementById("alquiler-mensual");
   if (alquilerInput) alquilerInput.value = "";
+  _lastBreakdown = null;
+  _lastContext   = null;
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
