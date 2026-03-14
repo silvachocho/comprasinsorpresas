@@ -119,7 +119,15 @@
 
         <div class="nota-banco" id="nota-banco" style="display:none;"></div>
 
-        <!-- Bloque: resumen financiero -->
+        <!-- Bloque principal: dato más importante -->
+        <div id="bloque-principal" style="background:var(--navy);border-radius:var(--radius-sm);padding:24px 24px 20px;margin-bottom:20px;display:none;">
+          <p style="font-family:var(--font-body);font-size:0.78rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:rgba(245,240,232,0.6);margin-bottom:8px;">Necesitás aproximadamente</p>
+          <p id="bloque-principal-monto" style="font-family:var(--font-display);font-size:clamp(1.8rem,5vw,2.4rem);font-weight:700;color:var(--sand);line-height:1.1;margin-bottom:12px;">–</p>
+          <p id="bloque-principal-pct" style="font-size:0.875rem;color:rgba(245,240,232,0.75);line-height:1.5;"></p>
+          <p style="font-size:0.78rem;color:rgba(245,240,232,0.45);margin-top:8px;">&#128204; En Uruguay normalmente se necesita entre 25% y 35% del valor de la vivienda para comprar.</p>
+        </div>
+
+        <!-- Bloque: resumen financiero secundario -->
         <div class="summary-grid" id="summary-grid">
 
           <div class="summary-row">
@@ -138,24 +146,26 @@
             <span class="summary-label">Gastos de compra estimados</span>
             <span class="summary-value" id="total-amount">–</span>
           </div>
-          <div class="summary-row summary-row--total">
-            <span class="summary-label">Dinero total necesario antes de comprar</span>
-            <span class="summary-value" id="sum-total-necesario">–</span>
-          </div>
 
         </div>
 
+        <!-- Ahorro necesario — oculto, valor movido al bloque principal -->
+        <div class="ahorro-bloque" id="ahorro-bloque" style="display:none;">
+          <p class="ahorro-pct-line" id="ahorro-pct-line"></p>
+        </div>
+
+        <!-- Gastos adicionales en USD y % -->
+        <p class="extra-pct-line" id="extra-pct"></p>
+
+        <!-- Costo total — posición secundaria -->
         <div class="total-box total-box--final">
           <div class="total-label">Costo total de la operación (precio + gastos)</div>
           <div class="total-amount total-amount--final" id="total-final">USD 0</div>
         </div>
 
-        <p class="extra-pct-line" id="extra-pct"></p>
-
-        <!-- Funcionalidad 1 & 2: ahorro necesario + mensaje educativo -->
-        <div class="ahorro-bloque" id="ahorro-bloque" style="display:none;">
-          <p class="ahorro-pct-line" id="ahorro-pct-line"></p>
-          <p class="ahorro-edu">&#128204; En Uruguay normalmente se necesita entre 25% y 35% del valor de la vivienda para comprar.</p>
+        <div class="nota-itp">
+          <span class="nota-icon">ℹ️</span>
+          <p><strong>Nota sobre el ITP:</strong> El impuesto se liquida sobre el <em>mayor</em> valor entre el precio de compraventa escriturado y el <em>valor catastral</em> del inmueble fijado por la DGC. Si el valor catastral supera al precio pactado, la base imponible será el catastral y el ITP resultará mayor al estimado aquí. Verificá el valor catastral con tu escribano antes de cerrar la operación.</p>
         </div>
 
         <!-- Funcionalidad 3: comparador alquiler -->

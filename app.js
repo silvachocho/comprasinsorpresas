@@ -294,25 +294,34 @@ function renderResults(r, { P, L, modoPrestamo }) {
     rowPrestamo.style.display = "none";
   }
 
-  document.getElementById("sum-propio").textContent          = fmt(r.dineroPropio);
-  document.getElementById("total-amount").textContent        = fmt(r.extraTotal);
-  document.getElementById("sum-total-necesario").textContent = fmt(r.dineroTotalNecesario);
-  document.getElementById("total-final").textContent         = fmt(r.costoTotal);
+  document.getElementById("sum-propio").textContent   = fmt(r.dineroPropio);
+  document.getElementById("total-amount").textContent = fmt(r.extraTotal);
+  document.getElementById("total-final").textContent  = fmt(r.costoTotal);
 
-  // ── Extra pct ─────────────────────────────────────────
-  const pctEl = document.getElementById("extra-pct");
-  if (pctEl) {
-    pctEl.textContent =
-      `Los gastos adicionales representan el ${fmtPct(r.extraPct)} del precio de compra.`;
+  // ── Bloque principal — dinero total necesario ───────────
+  const bloquePrincipal = document.getElementById("bloque-principal");
+  const bloqueMonto     = document.getElementById("bloque-principal-monto");
+  const bloquePct       = document.getElementById("bloque-principal-pct");
+  if (bloquePrincipal && bloqueMonto && bloquePct) {
+    bloqueMonto.textContent = fmt(r.dineroTotalNecesario);
+    bloquePct.textContent   = `Eso equivale aproximadamente al ${fmtPct(r.ahorroNecesarioPct)} del valor de la vivienda.`;
+    bloquePrincipal.style.display = "block";
   }
 
-  // ── Ahorro necesario ──────────────────────────────────
+  // ── Ahorro pct (oculto — valor ya está en bloque principal) ──
   const ahorroBloque = document.getElementById("ahorro-bloque");
   const ahorroLine   = document.getElementById("ahorro-pct-line");
   if (ahorroBloque && ahorroLine) {
-    ahorroLine.textContent =
-      `Para comprar esta propiedad necesitás tener ahorrado aproximadamente ${fmtPct(r.ahorroNecesarioPct)} del valor de la vivienda.`;
-    ahorroBloque.style.display = "block";
+    ahorroLine.textContent = "";
+    ahorroBloque.style.display = "none";
+  }
+
+  // ── Gastos adicionales: monto en USD primero, luego % ─
+  const pctEl = document.getElementById("extra-pct");
+  if (pctEl) {
+    pctEl.innerHTML =
+      `Solo en gastos de compra, necesitás sumar aproximadamente <strong>${fmt(r.extraTotal)}</strong> extra. ` +
+      `Eso equivale al ${fmtPct(r.extraPct)} del valor publicado.`;
   }
 
   // ── Comparador alquiler ───────────────────────────────
@@ -328,42 +337,26 @@ function renderResults(r, { P, L, modoPrestamo }) {
   }
 
   // ── Input valor catastral — inyectar dentro del result-label del ITP ───────
-const itpItem = document.getElementById("itp-result-item");
-if (itpItem) {
-  const itpLabel = itpItem.querySelector(".result-label");
-  if (itpLabel) {
-    itpLabel.insertAdjacentHTML("beforeend", `
-      <div id="catastral-bloque" style="margin-top:14px; padding-top:10px; border-top:1px dashed #e5e7eb;">
-        
-        <p class="result-note">
-          El ITP se calcula sobre el valor catastral del inmueble. Como ese valor no siempre es público, aquí se muestra una estimación.
-        </p>
-
-        <p class="result-note" style="font-size:0.75rem; margin-top:8px; margin-bottom:4px;">
-          Valor catastral (opcional)
-        </p>
-
-        <div class="input-wrapper" style="max-width:220px;">
-          <span class="input-prefix">USD</span>
-          <input type="number" id="catastral-input" class="input" min="0" />
+  // Se inserta en result-label (columna izquierda) para que quede debajo del
+  // texto descriptivo, en flujo vertical, sin afectar el valor USD a la derecha.
+  const itpItem = document.getElementById("itp-result-item");
+  if (itpItem) {
+    const itpLabel = itpItem.querySelector(".result-label");
+    if (itpLabel) {
+      itpLabel.insertAdjacentHTML("beforeend", `
+        <div id="catastral-bloque" style="margin-top:10px;">
+          <p class="result-note">El ITP se calcula sobre el valor catastral del inmueble. Como ese valor no siempre es público, aquí se muestra una estimación.</p>
+          <div class="input-wrapper" style="margin-top:8px; max-width:260px;">
+            <span class="input-prefix">USD</span>
+            <input type="number" id="catastral-input" class="input" placeholder="Valor catastral (opcional)" min="0" />
+          </div>
+          <p class="result-note" style="margin-top:6px;">Si conocés el valor catastral podés ingresarlo para recalcular el ITP.</p>
+          <p class="result-note" style="margin-top:4px; color:#9ca3af; font-size:0.74rem;">Podés obtenerlo con el número de padrón del inmueble en Catastro o consultando a la inmobiliaria o escribano.</p>
         </div>
-
-        <p class="result-note" style="margin-top:6px;">
-          Si conocés el valor catastral podés ingresarlo para recalcular el ITP.
-        </p>
-
-        <p class="result-note" style="margin-top:4px; color:#9ca3af; font-size:0.74rem;">
-          Podés obtenerlo con el número de padrón del inmueble en Catastro o consultando a la inmobiliaria o escribano.
-        </p>
-
-      </div>
-    `);
-
-    document
-      .getElementById("catastral-input")
-      .addEventListener("input", recalcularConCatastral);
+      `);
+      document.getElementById("catastral-input").addEventListener("input", recalcularConCatastral);
+    }
   }
-}
 
   // ── Guardar contexto para recálculo por catastral ─────
   _lastBreakdown = r;
@@ -425,17 +418,18 @@ function recalcularConCatastral() {
   if (itpValorEl) itpValorEl.textContent = fmt(itpNuevo);
 
   // Actualizar todos los totales
-  document.getElementById("total-amount").textContent        = fmt(extraTotal);
-  document.getElementById("sum-total-necesario").textContent = fmt(dineroTotalNecesario);
-  document.getElementById("total-final").textContent         = fmt(costoTotal);
+  document.getElementById("total-amount").textContent = fmt(extraTotal);
+  document.getElementById("total-final").textContent  = fmt(costoTotal);
 
   const pctEl = document.getElementById("extra-pct");
-  if (pctEl) pctEl.textContent =
-    `Los gastos adicionales representan el ${fmtPct(extraPct)} del precio de compra.`;
+  if (pctEl) pctEl.innerHTML =
+    `Solo en gastos de compra, necesitás sumar aproximadamente <strong>${fmt(extraTotal)}</strong> extra. ` +
+    `Eso equivale al ${fmtPct(extraPct)} del valor publicado.`;
 
-  const ahorroLine = document.getElementById("ahorro-pct-line");
-  if (ahorroLine) ahorroLine.textContent =
-    `Para comprar esta propiedad necesitás tener ahorrado aproximadamente ${fmtPct(ahorroNecesarioPct)} del valor de la vivienda.`;
+  const bloqueMonto2 = document.getElementById("bloque-principal-monto");
+  const bloquePct2   = document.getElementById("bloque-principal-pct");
+  if (bloqueMonto2) bloqueMonto2.textContent = fmt(dineroTotalNecesario);
+  if (bloquePct2)   bloquePct2.textContent   = `Eso equivale aproximadamente al ${fmtPct(ahorroNecesarioPct)} del valor de la vivienda.`;
 }
 
 // ════════════════════════════════════════════════════════
