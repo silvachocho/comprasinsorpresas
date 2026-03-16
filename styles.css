@@ -570,9 +570,9 @@ body {
 
 .extra-pct-line {
   text-align: center;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--terracotta);
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: rgba(192, 96, 58, 0.65);
   margin: -8px 0 20px;
   letter-spacing: 0.01em;
 }

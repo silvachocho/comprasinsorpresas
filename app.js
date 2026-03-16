@@ -286,7 +286,7 @@ function renderResults(r, { P, L, modoPrestamo }) {
 
   const rowPrestamo = document.getElementById("sum-row-prestamo");
   if (state.usaBanco && L > 0) {
-    const labelPrestamo = modoPrestamo === "auto" ? "Préstamo banco (estimado 80%)" : "Préstamo banco";
+    const labelPrestamo = modoPrestamo === "auto" ? "Préstamo estimado del banco" : "Préstamo banco";
     rowPrestamo.querySelector(".summary-label").textContent = labelPrestamo;
     document.getElementById("sum-prestamo").textContent    = fmt(L);
     rowPrestamo.style.display = "flex";
@@ -344,14 +344,14 @@ function renderResults(r, { P, L, modoPrestamo }) {
     const itpLabel = itpItem.querySelector(".result-label");
     if (itpLabel) {
       itpLabel.insertAdjacentHTML("beforeend", `
-        <div id="catastral-bloque" style="margin-top:10px;">
-          <p class="result-note">El ITP se calcula sobre el valor catastral del inmueble. Como ese valor no siempre es público, aquí se muestra una estimación.</p>
-          <div class="input-wrapper" style="margin-top:8px; max-width:260px;">
+        <div id="catastral-bloque" style="margin-top:8px; margin-bottom:6px;">
+          <p class="result-note">El ITP se calcula sobre el valor catastral. Como ese valor no siempre es público, acá se muestra una estimación.</p>
+          <div class="input-wrapper" style="margin-top:8px; max-width:200px;">
             <span class="input-prefix">USD</span>
-            <input type="number" id="catastral-input" class="input" placeholder="Valor catastral (opcional)" min="0" />
+            <input type="number" id="catastral-input" class="input" placeholder="Valor catastral" min="0" />
           </div>
           <p class="result-note" style="margin-top:6px;">Si conocés el valor catastral podés ingresarlo para recalcular el ITP.</p>
-          <p class="result-note" style="margin-top:4px; color:#9ca3af; font-size:0.74rem;">Podés obtenerlo con el número de padrón del inmueble en Catastro o consultando a la inmobiliaria o escribano.</p>
+          <p class="result-note" style="margin-top:4px; color:#c0bab2; font-size:0.72rem;">Podés obtenerlo con el número de padrón del inmueble en Catastro o consultando a la inmobiliaria o escribano.</p>
         </div>
       `);
       document.getElementById("catastral-input").addEventListener("input", recalcularConCatastral);
