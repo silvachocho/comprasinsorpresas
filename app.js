@@ -16,19 +16,10 @@ const TASAS_COMPRA = {
   registrosFijo:     800,
 };
 
-const BANCOS = {
-  bhu:       { label: "BHU",       tipo: "real",     fijo: 800,  tasa: null  },
-  brou:      { label: "BROU",      tipo: "estimado", fijo: 800,  tasa: 0.012 },
-  santander: { label: "Santander", tipo: "estimado", fijo: 800,  tasa: 0.015 },
-  itau:      { label: "Itaú",      tipo: "estimado", fijo: 800,  tasa: 0.015 },
-  bbva:      { label: "BBVA",      tipo: "estimado", fijo: 800,  tasa: 0.015 },
-  otro:      { label: "Otro",      tipo: "estimado", fijo: 800,  tasa: 0.014 },
-};
-
-const NOTAS_BANCO = {
-  real:     "BHU: los costos bancarios aquí reflejan un cargo fijo observado en una operación real; pueden existir otros cargos según el caso.",
-  estimado: "Costos bancarios estimados. Pueden variar según tarifario del banco, seguros y condiciones del préstamo.",
-};
+// Estimación orientativa de gastos bancarios de tramitación (tasación, seguros, apertura).
+// En la práctica suelen estar entre USD 500 y USD 1.500 según el banco y el caso.
+// No se desglosa por banco porque esa información no es pública ni verificable.
+const GASTO_BANCO_ESTIMADO = 1000;
 
 const RATIO_PRESTAMO_AUTO = 0.80; // 80% del precio de la propiedad
 
@@ -99,9 +90,54 @@ function actualizarUIModoPrestamo() {
   }
 }
 
+function copiarResultado() {
+  const items = document.querySelectorAll("#results-list .result-value");
+  const labels = [
+    "ITP",
+    "Comisión inmobiliaria",
+    "Honorarios de escribano",
+    "Aportes notariales",
+    "Gastos registrales y certificados",
+    "Gastos bancarios",
+  ];
+
+  let lineas = ["CompraSinSorpresas — Resumen de costos estimados", ""];
+
+  items.forEach((el, i) => {
+    lineas.push(`${labels[i]}: ${el.textContent.trim()}`);
+  });
+
+  lineas.push("");
+
+  const rowPrestamo = document.getElementById("sum-row-prestamo");
+  lineas.push(`Precio de la vivienda: ${document.getElementById("sum-precio").textContent.trim()}`);
+  if (rowPrestamo && rowPrestamo.style.display !== "none") {
+    const labelPrestamo = rowPrestamo.querySelector(".summary-label").textContent.trim();
+    lineas.push(`${labelPrestamo}: ${document.getElementById("sum-prestamo").textContent.trim()}`);
+  }
+  lineas.push(`Dinero propio necesario: ${document.getElementById("sum-propio").textContent.trim()}`);
+  lineas.push(`Gastos de compra estimados: ${document.getElementById("total-amount").textContent.trim()}`);
+  lineas.push(`Costo total de la operación: ${document.getElementById("total-final").textContent.trim()}`);
+  lineas.push(`Dinero total necesario: ${document.getElementById("bloque-principal-monto").textContent.trim()}`);
+  lineas.push("");
+  lineas.push("Valores orientativos. Consultá siempre a un escribano y a tu banco.");
+
+  const texto = lineas.join("\n");
+
+  if (!navigator.clipboard) return;
+
+  navigator.clipboard.writeText(texto).then(() => {
+    const btn = document.getElementById("btn-copiar");
+    btn.textContent = "Copiado ✓";
+    setTimeout(() => { btn.textContent = "Copiar resultado"; }, 2000);
+  }).catch(() => {});
+}
+
 // Actualizar el bloque auto cada vez que cambia el precio
 document.getElementById("precio").addEventListener("input", function () {
   if (this.value < 0) this.value = 0;
+  const errorEl = document.getElementById("precio-error");
+  if (errorEl) errorEl.style.display = "none";
   if (state.usaBanco && state.modoPrestamo === "auto") {
     actualizarUIModoPrestamo();
   }
@@ -135,20 +171,7 @@ function computeBreakdown({ P, L, bancoClave, usaBanco, usaInmobiliaria }) {
   const aportesNotariales = P * t.aportesNotariales;
   const registros         = t.registrosFijo;
 
-  let banco     = 0;
-  let bancoInfo = null;
-
-  if (usaBanco && bancoClave) {
-    const b = BANCOS[bancoClave];
-    banco   = b.tipo === "real" ? b.fijo : L * b.tasa + b.fijo;
-    bancoInfo = {
-      ...b,
-      clave:        bancoClave,
-      monto:        banco,
-      tasaAplicada: b.tipo === "estimado" ? L * b.tasa : null,
-      nota:         NOTAS_BANCO[b.tipo],
-    };
-  }
+  const banco = usaBanco ? GASTO_BANCO_ESTIMADO : 0;
 
   const extraTotal           = itp + comision + escribano + aportesNotariales + registros + banco;
   const costoTotal           = P + extraTotal;
@@ -159,7 +182,7 @@ function computeBreakdown({ P, L, bancoClave, usaBanco, usaInmobiliaria }) {
 
   return {
     itp, comision, escribano, aportesNotariales, registros,
-    banco, bancoInfo,
+    banco,
     extraTotal, costoTotal, extraPct,
     dineroPropio, dineroTotalNecesario, ahorroNecesarioPct,
   };
@@ -169,13 +192,16 @@ function computeBreakdown({ P, L, bancoClave, usaBanco, usaInmobiliaria }) {
 // VALIDACIONES
 // ════════════════════════════════════════════════════════
 
-function validar({ P, L, bancoClave, usaBanco }) {
+function mostrarErrorPrecio(msg) {
+  const el = document.getElementById("precio-error");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function validar({ P, L, usaBanco }) {
   if (P <= 0) {
-    alert("Por favor ingresá el precio de la propiedad.");
-    return false;
-  }
-  if (usaBanco && !bancoClave) {
-    alert("Por favor seleccioná un banco.");
+    mostrarErrorPrecio("Por favor ingresá el precio de la propiedad.");
     return false;
   }
 
@@ -237,14 +263,12 @@ function renderResults(r, { P, L, modoPrestamo }) {
     },
   ];
 
-  if (state.usaBanco && r.bancoInfo) {
-    const b      = r.bancoInfo;
-    const esReal = b.tipo === "real";
-    const label  = esReal ? "Gastos bancarios (BHU)" : `Gastos bancarios (estimado) — ${b.label}`;
-    const note   = esReal
-      ? `Cargo fijo observado en operación real: ${fmt(b.fijo)}`
-      : `L × ${(b.tasa * 100).toFixed(1).replace(".", ",")}% (${fmt(b.tasaAplicada)}) + gastos fijos (${fmt(b.fijo)})`;
-    items.push({ label, note, value: fmt(r.banco) });
+  if (state.usaBanco) {
+    items.push({
+      label: "Gastos bancarios (estimado)",
+      note:  "Tasación, seguros y gastos de apertura. En la práctica suelen estar entre USD 500 y USD 1.500 según el banco. Consultá con tu banco para el valor exacto.",
+      value: fmt(r.banco),
+    });
   } else {
     items.push({
       label: "Gastos bancarios",
@@ -272,14 +296,7 @@ function renderResults(r, { P, L, modoPrestamo }) {
 
   // ── Nota bancaria ─────────────────────────────────────
   const notaBancoEl = document.getElementById("nota-banco");
-  if (notaBancoEl) {
-    if (state.usaBanco && r.bancoInfo) {
-      notaBancoEl.textContent   = r.bancoInfo.nota;
-      notaBancoEl.style.display = "block";
-    } else {
-      notaBancoEl.style.display = "none";
-    }
-  }
+  if (notaBancoEl) notaBancoEl.style.display = "none";
 
   // ── Summary grid ──────────────────────────────────────
   document.getElementById("sum-precio").textContent = fmt(P);
@@ -382,13 +399,14 @@ function calcularAlquiler() {
     return;
   }
 
-  const totalAlquiler10 = alquiler * 12 * 10;
+  const horizonte = parseInt(document.getElementById("horizonte-anos").value) || 10;
+  const totalAlquiler10 = alquiler * 12 * horizonte;
 
   // Analytics
   if (typeof gtag !== "undefined") gtag("event", "uso_calculadora_alquiler");
 
   resultadoEl.innerHTML =
-    `Si alquilás esta propiedad durante <strong>10 años</strong> pagando <strong>${fmt(alquiler)}</strong> por mes, habrás pagado aproximadamente <strong>${fmt(totalAlquiler10)}</strong> en alquiler.`;
+    `Si alquilás esta propiedad durante <strong>${horizonte} años</strong> pagando <strong>${fmt(alquiler)}</strong> por mes, habrás pagado aproximadamente <strong>${fmt(totalAlquiler10)}</strong> en alquiler.`;
   resultadoEl.style.display = "block";
 }
 
@@ -437,16 +455,13 @@ function recalcularConCatastral() {
 // ════════════════════════════════════════════════════════
 
 function calcular() {
-  const P          = parseFloat(document.getElementById("precio").value) || 0;
-  const bancoClave = document.getElementById("banco-nombre").value;
+  const P = parseFloat(document.getElementById("precio").value) || 0;
 
-  // Resolver L según modo (aplica igual para todos los bancos, incluido BHU).
-  // BHU tiene gastos fijos, pero L sí impacta en dinero propio y ahorro necesario.
   let L = 0;
   if (state.usaBanco) {
     if (state.modoPrestamo === "auto") {
       if (P <= 0) {
-        alert("Por favor ingresá el precio de la propiedad para estimar el préstamo.");
+        mostrarErrorPrecio("Por favor ingresá el precio de la propiedad para estimar el préstamo.");
         return;
       }
       L = P * RATIO_PRESTAMO_AUTO;
@@ -455,13 +470,13 @@ function calcular() {
     }
   }
 
-  if (!validar({ P, L, bancoClave, usaBanco: state.usaBanco })) return;
+  if (!validar({ P, L, usaBanco: state.usaBanco })) return;
 
   // Analytics
   if (typeof gtag !== "undefined") gtag("event", "simulacion_realizada");
 
   const breakdown = computeBreakdown({
-    P, L, bancoClave,
+    P, L,
     usaBanco:        state.usaBanco,
     usaInmobiliaria: state.usaInmobiliaria,
   });
@@ -512,12 +527,16 @@ document.getElementById("btn-reset").addEventListener("click", () => {
   document.querySelector(".form-card").style.display = "block";
   const alquilerInput  = document.getElementById("alquiler-mensual");
   if (alquilerInput) alquilerInput.value = "";
+  const horizonteSelect = document.getElementById("horizonte-anos");
+  if (horizonteSelect) horizonteSelect.value = "10";
   _lastBreakdown = null;
   _lastContext   = null;
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
 document.getElementById("btn-alquiler").addEventListener("click", calcularAlquiler);
+
+document.getElementById("btn-copiar").addEventListener("click", copiarResultado);
 
 document.getElementById("btn-comparador-completo").addEventListener("click", () => {
   // Analytics

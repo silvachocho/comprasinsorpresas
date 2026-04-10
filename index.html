@@ -29,6 +29,9 @@
       <!-- Form -->
       <section class="card form-card">
         <h2 class="section-title">Ingresá los datos de tu compra</h2>
+        <p style="font-size: 0.92rem; color: var(--text-muted); margin: -4px 0 20px; line-height: 1.5;">
+          Además del precio de la vivienda, comprar en Uruguay implica impuestos, honorarios y gastos bancarios. Ingresá los datos de tu operación y obtené un desglose detallado del total real que necesitás tener disponible.
+        </p>
 
         <!-- Precio propiedad -->
         <div class="field-group">
@@ -37,6 +40,7 @@
             <span class="input-prefix">USD</span>
             <input type="number" id="precio" class="input" placeholder="0" min="0" />
           </div>
+          <p id="precio-error" style="display:none;" class="field-error"></p>
         </div>
 
         <!-- Banco -->
@@ -50,18 +54,6 @@
 
         <!-- Sub-opciones banco -->
         <div class="sub-fields" id="banco-fields" style="display:none;">
-          <div class="field-group">
-            <label for="banco-nombre" class="label">Banco</label>
-            <select id="banco-nombre" class="select">
-              <option value="">Seleccioná un banco</option>
-              <option value="bhu">BHU</option>
-              <option value="brou">BROU</option>
-              <option value="santander">Santander</option>
-              <option value="itau">Itaú</option>
-              <option value="bbva">BBVA</option>
-              <option value="otro">Otro</option>
-            </select>
-          </div>
           <!-- Modo definición del préstamo -->
           <div class="field-group">
             <label class="label">¿Cómo querés definir el monto del préstamo?</label>
@@ -163,6 +155,13 @@
           <div class="total-amount total-amount--final" id="total-final">USD 0</div>
         </div>
 
+        <button
+          id="btn-copiar"
+          style="display:block; width:100%; margin-top:16px; padding:10px 16px; background:transparent; border:1.5px solid var(--navy); border-radius:var(--radius-sm); color:var(--navy); font-family:var(--font-body); font-size:0.9rem; font-weight:500; cursor:pointer;"
+        >
+          Copiar resultado
+        </button>
+
         <div class="nota-itp">
           <span class="nota-icon">ℹ️</span>
           <p><strong>Nota sobre el ITP:</strong> El impuesto se liquida sobre el <em>mayor</em> valor entre el precio de compraventa escriturado y el <em>valor catastral</em> del inmueble fijado por la DGC. Si el valor catastral supera al precio pactado, la base imponible será el catastral y el ITP resultará mayor al estimado aquí. Verificá el valor catastral con tu escribano antes de cerrar la operación.</p>
@@ -171,6 +170,17 @@
         <!-- Funcionalidad 3: comparador alquiler -->
         <div class="comparador-bloque" id="comparador-bloque" style="display:none;">
           <h3 class="comparador-titulo">&#191;Est&#225;s comparando con alquilar?</h3>
+          <div class="comparador-input-row">
+            <label for="horizonte-anos" class="label">Horizonte de comparación</label>
+            <div class="input-wrapper input-wrapper--inline">
+              <select id="horizonte-anos" class="input">
+                <option value="5">5 años</option>
+                <option value="10" selected>10 años</option>
+                <option value="15">15 años</option>
+                <option value="20">20 años</option>
+              </select>
+            </div>
+          </div>
           <div class="comparador-input-row">
             <label for="alquiler-mensual" class="label">Alquiler mensual estimado</label>
             <div class="input-wrapper input-wrapper--inline">

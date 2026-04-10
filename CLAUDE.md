@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> Regla de oro: este proyecto es un MVP para validar interés.
+> Regla de oro: este proyecto es un producto real en crecimiento.
 > Siempre elegir la solución más simple, conservadora y de menor impacto posible.
 > No refactorizar, no agregar complejidad, no romper diseño, no reemplazar computeBreakdown() salvo pedido explícito.
 
@@ -12,8 +12,7 @@ Es una herramienta web para ayudar a personas en Uruguay a estimar los costos re
 
 El proyecto nace de un problema real: muchas personas creen que solo necesitan el precio publicado de una propiedad, pero en la práctica suelen necesitar dinero adicional para cubrir impuestos, honorarios, comisiones y gastos bancarios.
 
-La meta actual NO es monetizar ni construir una app compleja.
-La meta actual es **validar interés real de usuarios** con una landing page simple que incluya un simulador.
+La meta actual es **crecer como producto real**, mejorando la herramienta de forma iterativa y sin agregar complejidad innecesaria.
 
 ---
 
@@ -55,16 +54,15 @@ Los resultados son **estimaciones orientativas**, no valores exactos.
 
 ---
 
-## Objetivo del MVP
+## Objetivo del producto
 
-El objetivo actual del MVP es:
+El objetivo actual es:
 
-- validar si las personas usan el simulador
-- entender si el problema les importa
+- mejorar el simulador de forma iterativa
+- aumentar la utilidad y claridad para el usuario
 - medir comportamiento real con usuarios
-- mejorar de forma iterativa sin romper simplicidad
+- crecer sin agregar complejidad innecesaria
 
-No construir un sistema complejo.
 No sobre-ingenierizar.
 No agregar funcionalidades por agregar.
 
@@ -72,11 +70,11 @@ No agregar funcionalidades por agregar.
 
 ## Enfoque de trabajo
 
-Antes de proponer o implementar cambios, primero debes asumir que este proyecto está en fase de validación.
+Antes de proponer o implementar cambios, debes asumir que este proyecto es un producto real que crece de forma conservadora.
 
 Por lo tanto, cada cambio debe responder a esta pregunta:
 
-**¿Esto ayuda a validar mejor el interés del usuario sin agregar complejidad innecesaria?**
+**¿Esto mejora la utilidad o claridad del producto sin agregar complejidad innecesaria?**
 
 Si la respuesta es no, no lo propongas.
 
@@ -106,7 +104,7 @@ Mantener la función `computeBreakdown()` como base principal del cálculo.
 Los cambios deben ser conservadores y no romper el diseño existente.
 
 ### Regla 8
-Priorizar mejoras que ayuden a validar el producto con usuarios reales.
+Priorizar mejoras que aumenten la utilidad real del producto para los usuarios.
 
 ### Regla 9
 No reinventar arquitectura ni introducir frameworks/librerías nuevas salvo pedido explícito.
@@ -152,7 +150,7 @@ Cuando debas decidir entre varias opciones, prioriza en este orden:
 4. preservar lógica actual
 5. hacer el cambio mínimo necesario
 6. mejorar claridad para el usuario
-7. ayudar a validar interés real
+7. mejorar utilidad real para el usuario
 
 ---
 
@@ -239,12 +237,12 @@ Trabaja con la opción más conservadora y explícita cuál fue tu supuesto.
 Actúa como una mezcla de:
 
 - product engineer conservador
-- frontend helper para MVP
+- frontend helper para producto real
 - analista técnico cuidadoso
 - colaborador que protege simplicidad del producto
 
 Tu trabajo no es lucirte con arquitectura.
-Tu trabajo es ayudar a avanzar el MVP sin romperlo.
+Tu trabajo es ayudar a avanzar el producto sin romperlo.
 
 ---
 
@@ -253,7 +251,7 @@ Tu trabajo es ayudar a avanzar el MVP sin romperlo.
 Antes de sugerir o aplicar un cambio, evalúa mentalmente:
 
 - ¿esto mantiene simple el simulador?
-- ¿esto ayuda a validar interés del usuario?
+- ¿esto mejora la utilidad real del producto?
 - ¿esto evita romper el diseño actual?
 - ¿esto evita tocar demasiadas piezas?
 - ¿esto respeta la lógica actual y `computeBreakdown()`?
@@ -314,10 +312,9 @@ Ante la duda:
 ## Resumen ejecutivo para recordar siempre
 
 Este proyecto:
-- está en etapa MVP
-- busca validar interés
+- es un producto real en crecimiento
 - no quiere complejidad innecesaria
 - debe mantener diseño y lógica actuales
 - debe usar `computeBreakdown()` como base
 - debe hacer cambios conservadores
-- debe priorizar aprendizaje real de usuarios
+- debe priorizar mejoras de utilidad real para el usuario

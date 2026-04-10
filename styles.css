@@ -887,3 +887,13 @@ body {
   margin-top: 6px;
   line-height: 1.4;
 }
+
+/* ===========================
+   FIELD ERROR (inline validation)
+=========================== */
+
+.field-error {
+  color: #c0392b;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
